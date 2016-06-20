@@ -145,7 +145,7 @@ describe('modeling - label layouting', function() {
       }));
 
 
-      it('down', inject(function(elementRegistry, connectionSegmentMove, dragging) {
+      it.only('down', inject(function(elementRegistry, connectionSegmentMove, dragging) {
 
         // given
         var connection = elementRegistry.get('SequenceFlow_C'),

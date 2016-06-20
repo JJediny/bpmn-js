@@ -55,4 +55,30 @@ describe('modeling/behavior/util - GeometricUtil', function() {
 
   });
 
+  it('should calculate right bounds of line', function() {
+
+    // given
+    var line = [
+      { x: 0, y: 0 },
+      { x: 100, y: 100 }
+    ];
+
+    var testPoints = [
+      { point: { x: 1, y: 1 }, inBounds: true },
+      { point: { x: -1, y: -1 }, inBounds: false },
+      { point: { x: 1, y: 1 }, inBounds: true },
+      { point: { x: 1, y: 1 }, inBounds: true }
+    ];
+
+    for (var i=0; i<testPoints.length; i++) {
+
+      // when
+      var inBounds = GeometricUtil.pointInBounds(testPoints[i].point, line);
+
+      // then
+      expect(inBounds).to.be.equal(testPoints[i].inBounds);
+    }
+
+  });
+
 });
