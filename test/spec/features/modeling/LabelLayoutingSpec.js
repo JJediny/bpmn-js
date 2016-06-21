@@ -105,7 +105,7 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expectLabelMoved(connection, labelPosition, { x: -70, y: 0 });
+        expectLabelMoved(connection, labelPosition, { x: -70, y: 23 });
       }));
 
 
@@ -141,11 +141,11 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expectLabelMoved(connection, labelPosition, { x: 70, y: 0 });
+        expectLabelMoved(connection, labelPosition, { x: 70, y: -17 });
       }));
 
 
-      it.only('down', inject(function(elementRegistry, connectionSegmentMove, dragging) {
+      it('down', inject(function(elementRegistry, connectionSegmentMove, dragging) {
 
         // given
         var connection = elementRegistry.get('SequenceFlow_C'),
@@ -178,7 +178,7 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expectLabelMoved(connection, labelPosition, { x: 0, y: -85 });
+        expectLabelMoved(connection, labelPosition, { x: -39, y: -85 });
 
       }));
 
@@ -196,8 +196,8 @@ describe('modeling - label layouting', function() {
         modeling.reconnectStart(connection, shape, { x: 0, y: 0 });
 
         // then
-        expect(Math.round(connection.label.x)).to.be.equal(647);
-        expect(Math.round(connection.label.y)).to.be.equal(160);
+        expect(Math.round(connection.label.x)).to.be.equal(528);
+        expect(Math.round(connection.label.y)).to.be.equal(137);
 
       }));
 
@@ -212,8 +212,8 @@ describe('modeling - label layouting', function() {
         modeling.reconnectEnd(connection, shape, { x: 294, y: 270 });
 
         // then
-        expect(Math.round(connection.label.x)).to.be.equal(169);
-        expect(Math.round(connection.label.y)).to.be.equal(105);
+        expect(Math.round(connection.label.x)).to.be.equal(220);
+        expect(Math.round(connection.label.y)).to.be.equal(178);
 
       }));
 
@@ -240,6 +240,8 @@ describe('modeling - label layouting', function() {
 
     describe('on bendpoint add/delete/moving', function() {
 
+      //@janstuemmel: maybe different behavior
+
       it('moving', inject(function(elementRegistry, bendpointMove, dragging) {
 
         // given
@@ -253,8 +255,8 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expect(Math.round(connection.label.x)).to.be.equal(453);
-        expect(Math.round(connection.label.y)).to.be.equal(179);
+        expect(Math.round(connection.label.x)).to.be.equal(425);
+        expect(Math.round(connection.label.y)).to.be.equal(170);
 
       }));
 
@@ -272,8 +274,8 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expect(Math.round(connection.label.x)).to.be.equal(401);
-        expect(Math.round(connection.label.y)).to.be.equal(187);
+        expect(Math.round(connection.label.x)).to.be.equal(396);
+        expect(Math.round(connection.label.y)).to.be.equal(171);
 
       }));
 
@@ -296,14 +298,110 @@ describe('modeling - label layouting', function() {
         dragging.end();
 
         // then
-        expect(Math.round(connection.label.x)).to.be.equal(464);
-        expect(Math.round(connection.label.y)).to.be.equal(132);
+        expect(Math.round(connection.label.x)).to.be.equal(478);
+        expect(Math.round(connection.label.y)).to.be.equal(130);
 
       }));
 
     });
 
     describe('special cases', function() {
+
+      // @janstuemmel: failing - solve with ticket #479
+      it.skip('should behave properly, right after importing', inject(function(elementRegistry, connectionSegmentMove, dragging, modeling) {
+
+        // given
+        var connection = elementRegistry.get('SequenceFlow_C'),
+            labelPosition = getLabelPosition(connection),
+            label = connection.label;
+
+        // when
+        connectionSegmentMove.start(canvasEvent({ x: 0, y: 0 }), connection, 2);
+
+        dragging.move(canvasEvent({ x: 0, y: 70 }));
+
+        dragging.end();
+
+        // move label
+        modeling.moveShape(label, { x: 40, y: -30 });
+
+        // drag again
+        connectionSegmentMove.start(canvasEvent({ x: 0, y: 0 }), connection, 1);
+
+        dragging.move(canvasEvent({ x: -20, y: 0 }));
+
+        dragging.end();
+
+        // then
+        expectLabelMoved(connection, labelPosition, { x: 20, y: 40 });
+
+      }));
+
+      describe('label out of bounds', function() {
+
+        it('should reposition on right segment', inject(function(elementRegistry, connectionSegmentMove, dragging) {
+
+          // given
+          var connection = elementRegistry.get('SequenceFlow_E'),
+              labelPosition = getLabelPosition(connection);
+
+          // when
+          connectionSegmentMove.start(canvasEvent({ x: 0, y: 0 }), connection, 2);
+
+          dragging.move(canvasEvent({ x: -100, y: 0 }));
+
+          dragging.end();
+
+          // then
+          expectLabelMoved(connection, labelPosition, { x: -45, y: -70 });
+
+        }));
+
+
+        it('should not move label that is out of bounds', inject(function(elementRegistry, connectionSegmentMove, dragging, modeling) {
+
+          // given
+          var connection = elementRegistry.get('SequenceFlow_C');
+
+          // move shape away
+          modeling.moveShape(connection.label, { x: 0, y: 140 });
+
+          var labelPosition = getLabelPosition(connection);
+
+          // when
+          connectionSegmentMove.start(canvasEvent({ x: 0, y: 0 }), connection, 2);
+
+          dragging.move(canvasEvent({ x: 0, y: 30 }));
+
+          dragging.end();
+
+          // then
+          expectLabelMoved(connection, labelPosition, { x: 0, y: 0 });
+        }));
+
+
+        it('should not move label that is out of bounds in corner', inject(function(elementRegistry, connectionSegmentMove, dragging, modeling) {
+
+          // given
+          var connection = elementRegistry.get('SequenceFlow_C');
+
+          // move shape away
+          modeling.moveShape(connection.label, { x: 50, y: 0 });
+
+          var labelPosition = getLabelPosition(connection);
+
+          // when
+          connectionSegmentMove.start(canvasEvent({ x: 0, y: 0 }), connection, 2);
+
+          dragging.move(canvasEvent({ x: 0, y: 30 }));
+
+          dragging.end();
+
+          // then
+          expectLabelMoved(connection, labelPosition, { x: 0, y: 0 });
+        }));
+
+      });
 
     });
 
@@ -331,8 +429,8 @@ function expectLabelMoved(connection, oldPosition, expectedDelta) {
   var newPosition = getLabelPosition(connection);
 
   var delta = {
-    x: newPosition.x - oldPosition.x,
-    y: newPosition.y - oldPosition.y
+    x: Math.round(newPosition.x - oldPosition.x),
+    y: Math.round(newPosition.y - oldPosition.y)
   };
 
   expect(delta).to.eql(expectedDelta);
